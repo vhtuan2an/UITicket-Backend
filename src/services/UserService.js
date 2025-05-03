@@ -1,7 +1,7 @@
 const User = require("../models/UserModel");
 
 class UserService {
-    async getUser(role) {
+    async getUsers(role) {
         try {
             const filter = {isDeleted: false};
             if (role) {
@@ -86,4 +86,20 @@ class UserService {
         }
     }
 
+    // async updateUser(id, data) {
+    //     try {
+    //         const user = await User.findOne({ _id: id, isDeleted: false });
+    //         if (!user) {
+    //             throw new Error("User not found");
+    //         }
+
+    //     }
+    //     catch (error) {
+    //         throw new Error(error.message);
+    //     }
+    // }
+
+
 }
+
+module.exports = new UserService();
