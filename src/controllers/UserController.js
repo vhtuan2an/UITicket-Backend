@@ -21,8 +21,8 @@ class UserController {
     }
 
     async getUserById(req, res) {
-        const { id } = req.params;
         try {
+            const id = req.id; 
             const user = await UserService.getUserById(id);
             res.status(200).json({
                 status: "success",
@@ -67,3 +67,5 @@ class UserController {
     }
 
 }
+
+module.exports = new UserController();
