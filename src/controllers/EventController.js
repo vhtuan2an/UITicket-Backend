@@ -1,10 +1,12 @@
 const EventService = require('../services/EventService');
 const { authMiddleware } = require('../middlewares/AuthMiddleware');
+const { uploadToCloudinary } = require('../utils/UploadImage');
 
 class EventController {
     async createEvent(req, res) {
         try {
             const eventData = req.body;
+            const files = req.files; // Các file đã upload qua multer
             const createdBy = req.id; 
 
             const requiredFields = ['name', 'categoryId', 'location', 'date', 'time'];
@@ -44,7 +46,6 @@ class EventController {
             // Gán lại date với đối tượng Date đầy đủ (bao gồm giờ)
             eventData.date = dateObj;
 
-            // Check if date is in the past
             const currentDate = new Date();
             if (eventData.date < currentDate) {
                 return res.status(400).json({
@@ -53,7 +54,23 @@ class EventController {
                 });
             }
 
-            // Continue with creating the event
+            // Upload hình ảnh lên Cloudinary nếu có
+            if (files && files.length > 0) {
+                try {
+                    const imageUrls = await Promise.all(
+                        files.map(file => uploadToCloudinary(file.buffer, { folder: 'events' }))
+                    );
+                    eventData.images = imageUrls;
+                } catch (uploadError) {
+                    return res.status(500).json({
+                        status: "error",
+                        message: "Error uploading images",
+                        error: uploadError.toString(),
+                    });
+                }
+            }
+
+            // Tiếp tục tạo sự kiện
             const result = await EventService.createEvent({
                 ...eventData,
                 createdBy
