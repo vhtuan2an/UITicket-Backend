@@ -90,6 +90,55 @@ class EventController {
             });
         }
     }
+
+    async getEvent(req, res) {
+        try {
+            const events = await EventService.getEvent();
+            if (!events || events.length ===0) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "No events found",
+                });
+            }
+            return res.status(200).json({
+                status: "success",
+                message: "Events retrieved successfully",
+                data: events,
+            });
+        }
+        catch (error) {
+            return res.status(500).json({
+                status: "error",
+                message: "Internal server error",
+                error: error.toString(),
+            });
+        }
+    }
+
+    async getEventById(req, res) {
+        try {
+            const eventId = req.params.id;
+            const event = await EventService.getEventById(eventId);
+            if (event.status === "error") {
+                return res.status(404).json({
+                    status: "error",
+                    message: "event not found"
+                });
+            }
+            return res.status(200).json({
+                status: "success",
+                message: "Event retrieved successfully",
+                data: event,
+            });
+        }
+        catch (error) {
+            return res.status(500).json({
+                status: "error",
+                message: "Internal server error",
+                error: error.toString(),
+            });
+        }
+    }
 }
 
 module.exports = new EventController();

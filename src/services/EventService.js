@@ -18,11 +18,33 @@ class EventService {
                 {new: true}
             );
 
-            return {
-                status: "success",
-                message: "Event created successfully",
-                data: savedEvent,
+            return savedEvent;
+        }
+        catch (error) {
+            throw new Error(error.message);
+        }
+    }
+
+    async getEvent() {
+        try {
+            const events = await EventModel.find({ isDeleted: false});
+            return events;
+        }
+        catch (error) {
+            throw new Error(error.message);
+        }
+    }
+
+    async getEventById(eventId) {
+        try {
+            const event = await EventModel.findById(eventId);
+            if (!event) {
+                return {
+                    status: "error",
+                    message: "Event not found",
+                }
             }
+            return event;
         }
         catch (error) {
             throw new Error(error.message);

@@ -10,4 +10,8 @@ router.post('/create',
      EventController.createEvent
 );
 
+router.get('/', authMiddleware(['admin','event_creator', 'ticket_buyer']), EventController.getEvent);
+
+router.get('/:id', authMiddleware(['admin','event_creator', 'ticket_buyer']), EventController.getEventById);
+
 module.exports = router;
