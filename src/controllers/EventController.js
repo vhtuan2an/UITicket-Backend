@@ -139,6 +139,26 @@ class EventController {
             });
         }
     }
+
+    async searchEvent(req, res) {
+        try {
+            console.log("Search params: ", req.query);
+            const searchParams = req.query;
+            const events = await EventService.searchEvent(searchParams);
+            return res.status(200).json({
+                status: "success",
+                message: "Events retrieved successfully",
+                data: events,
+            });
+        }
+        catch (error) {
+            return res.status(500).json({
+                status: "error",
+                message: "Internal server error",
+                error: error.toString(),
+            });
+        }
+    }
 }
 
 module.exports = new EventController();
