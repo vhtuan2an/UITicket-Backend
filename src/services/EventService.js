@@ -51,9 +51,32 @@ class EventService {
         }
     }
 
-    async updateEvent(eventId, eventData) {
+    async updateEvent(eventId, eventData, userId) {
         try {
+            const event = await EventModel.findById(eventId);
 
+            if (!event) {
+                return {
+                    status: "error",
+                    message: "Event not found",
+                }
+            }
+
+            if (event.createdBy.toString() != userId.toString()) {
+                return {
+                    status: "error",
+                    message: "You are not authorized to update this event",
+                }
+            }
+
+            const updatedEvent = await EventModel.findByIdAndUpdate(eventId,
+                { $set: eventData },
+                { new: true }
+            )
+            .populate('categoryId', 'name') 
+            .populate('createdBy', 'name')
+            .populate('collaborators', 'name');
+            return updatedEvent;
         }
         catch (error) {
             throw new Error(error.message);

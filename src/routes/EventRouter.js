@@ -24,6 +24,13 @@ router.get(
 
 router.get('/:id', authMiddleware(['admin','event_creator', 'ticket_buyer']), EventController.getEventById);
 
+router.put(
+    '/:eventId',
+    authMiddleware(['event_creator']),
+    uploadImage.array('images', 5),
+    EventController.updateEvent
+);
+
 
 
 module.exports = router;
