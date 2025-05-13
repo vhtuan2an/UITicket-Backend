@@ -1,4 +1,5 @@
 const EventModel = require('../models/EventModel');
+const TicketModel = require('../models/TicketModel');
 const User = require('../models/UserModel');
 
 class EventService {
@@ -143,6 +144,59 @@ class EventService {
         catch (error) {
             throw new Error(error.message);
         }  
+    }
+
+    async deleteEvent(eventId, userId) {
+        try {
+            const event = await EventModel.findById(eventId);
+            if (!event) {
+                return {
+                    status: "error",
+                    message: "Event not found",
+                };
+            }
+            const user = await User.findById(userId);
+            const role = user.role;
+            if (role !== 'admin' && role !== 'event_creator') {
+                return {
+                    status: "error",
+                    message: "You are not authorized to delete this event"
+                };
+            }
+
+            if (event.createdBy.toString() != userId.toString()) {
+                return {
+                    status: "error",
+                    message: "You are not authorized to delete this event"
+                };
+            }
+        
+
+            event.isDeleted = true;
+            event.status = "cancelled";
+
+            await TicketModel.updateMany(
+                { eventId: eventId },
+                { $set: { 
+                    status: "cancelled",
+                    cancelReason: "Event has been deleted"
+                },
+                $unset: {
+            transferTo: "",
+            transferRequestTime: ""
+          } });
+
+            await event.save();
+
+            return {
+                status: "success",
+                message: "Event deleted successfully",
+                data: event,
+            };
+        }
+        catch (error) {
+            throw new Error(error.message);
+        }
     }
 
 }

@@ -158,6 +158,32 @@ class EventController {
     }
   }
 
+  async deleteEvent(req, res) {
+    try {
+      const eventId = req.params.eventId;
+      const userId = req.id;
+      const result = await EventService.deleteEvent(eventId, userId);
+      if (result.status === "error") {
+        return res.status(401).json({
+          status: "error",
+          message: result.message,
+        });
+      }
+      return res.status(200).json({
+        status: "success",
+        message: "Event deleted successfully",
+        data: result,
+      });
+    }
+    catch (error) {
+      return res.status(500).json({
+        status: "error",
+        message: "Internal server error",
+        error: error.toString(),
+      });
+    }
+  }
+
   async updateEvent(req, res) {
     try {
       const eventId = req.params.eventId;

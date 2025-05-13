@@ -15,7 +15,7 @@ const ticketSchema = new Schema({
   bookingCode: { 
     type: String, 
     required: true, 
-    unique: true 
+    // unique: true 
   },
   qrCode: { 
     type: String, 

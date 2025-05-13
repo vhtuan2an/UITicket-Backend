@@ -31,6 +31,11 @@ router.put(
     EventController.updateEvent
 );
 
+router.delete(
+    '/:eventId',
+    authMiddleware(['admin', 'event_creator']),
+    EventController.deleteEvent
+);
 
 
 module.exports = router;
