@@ -35,7 +35,7 @@ class TicketController {
 
       const ticket = await TicketService.bookTicket(eventId, userId);
 
-      const orderInfo = `Payment for ticket ${ticket._id}`;
+      const orderInfo = `Thanh toán vé sự kiện "${event.name}"`;
       const redirectUrl = "";
       const paymentResponse = await MomoService.createPayment(
         event.price,
