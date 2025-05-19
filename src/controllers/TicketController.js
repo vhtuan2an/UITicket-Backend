@@ -68,6 +68,24 @@ class TicketController {
       });
     }
   }
+
+  async getTicketById(req, res) {
+    try {
+      const ticketId = req.params.id;
+      const ticket = await TicketService.getTicketById(ticketId);
+      res.status(200).json({
+        status: "success",
+        data: ticket,
+      });
+    } catch (error) {
+      console.error("Error getting ticket:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Internal server error",
+        error: error.toString(),
+      });
+    }
+  }  
 }
 
 module.exports = new TicketController();

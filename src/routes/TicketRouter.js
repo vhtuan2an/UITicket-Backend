@@ -9,4 +9,14 @@ router.post(
     TicketController.bookTicket
 );
 
+
+
+
+
+router.get(
+    '/:ticketId',
+    authMiddleware(['admin', 'event_creator', 'ticket_buyer']),
+    TicketController.getTicketById
+);
+
 module.exports = router;

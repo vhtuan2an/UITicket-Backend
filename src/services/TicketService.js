@@ -48,6 +48,21 @@ class TicketService {
       throw new Error(error.message);
     }
   }
+
+  async getTicketById(ticketId) {
+    try {
+      const ticket = await TicketModel.findById(ticketId)
+        .populate("eventId", "name date location")
+        .populate("buyerId", "name email");
+      if (!ticket) {
+        throw new Error("Ticket not found");
+      }
+      return ticket;
+    }
+    catch (error) {
+      throw new Error(error.message);
+    }
+  }
 }
 
 module.exports = new TicketService();
