@@ -7,14 +7,14 @@ class TicketService {
   static generateBookingCode() {
     return "TICKET-" + Math.random().toString(36).substr(2, 9).toUpperCase();
   }
-  async bookTicket(eventId, userId) {
+  async bookTicket(eventId, buyerId) {
     try {
       const event = await EventModel.findById(eventId);
       if (!event) {
         throw new Error("Event not found");
       }
 
-      const user = await User.findById(userId);
+      const user = await User.findById(buyerId);
       if (!user) {
         throw new Error("User not found");
       }
@@ -23,12 +23,12 @@ class TicketService {
         throw new Error("No tickets available");
       }
 
-      const bookingCode = this.generateBookingCode();
+      const bookingCode = TicketService.generateBookingCode();
       const qrCode = await QRCode.toDataURL(bookingCode);
 
       const ticket = await TicketModel.create({
         eventId,
-        userId,
+        buyerId ,
         bookingCode,
         qrCode,
         status: "booked",
@@ -40,7 +40,9 @@ class TicketService {
       event.ticketsSold += 1;
       await event.save();
 
-    user.ticketsBooked.push(ticket._id);
+    user.ticketsBought.push(ticket._id);
+
+    return ticket;
 
     } catch (error) {
       throw new Error(error.message);

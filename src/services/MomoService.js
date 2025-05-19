@@ -1,6 +1,6 @@
 const axios = require("axios");
 const crypto = require("crypto");
-const momoConfig = require("../config/MomoConfig");
+const momoConfig = require("../configs/MomoConfig");
 
 class MomoService {
   static generateSignature(rawSignature) {

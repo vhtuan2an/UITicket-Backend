@@ -1,7 +1,7 @@
 const MomoService = require("../services/MomoService");
 const Ticket = require("../models/TicketModel");
-const EmailService = require("../services/EmailService");
-const NotificationService = require("../services/NotificationService");
+// const EmailService = require("../services/EmailService");
+// const NotificationService = require("../services/NotificationService");
 
 class PaymentController {
   static async createPayment(req, res) {
@@ -50,43 +50,43 @@ class PaymentController {
       );
 
       // Gửi email nếu thanh toán thành công
-      if (resultCode === 0) {
-        try {
-          console.log("Attempting to send success email...");
-          await EmailService.sendPaymentSuccessEmail(ticket);
-          console.log("Payment success email sent");
+      // if (resultCode === 0) {
+      //   try {
+      //     console.log("Attempting to send success email...");
+      //     await EmailService.sendPaymentSuccessEmail(ticket);
+      //     console.log("Payment success email sent");
 
-          // Gửi thông báo qua FCM
-          if (ticket.buyerId?.fcmTokens?.length) {
-            const tokens = ticket.buyerId.fcmTokens.filter(Boolean);
-            const title = "Payment Successful";
-            const body = `Your ticket for order ${orderId} has been successfully paid. 🎉`;
-            const data = {
-              type: "payment_success",
-              ticketId: ticket._id.toString(),
-              orderId: orderId.toString(),
-            };
+      //     // Gửi thông báo qua FCM
+      //     if (ticket.buyerId?.fcmTokens?.length) {
+      //       const tokens = ticket.buyerId.fcmTokens.filter(Boolean);
+      //       const title = "Payment Successful";
+      //       const body = `Your ticket for order ${orderId} has been successfully paid. 🎉`;
+      //       const data = {
+      //         type: "payment_success",
+      //         ticketId: ticket._id.toString(),
+      //         orderId: orderId.toString(),
+      //       };
 
-            await NotificationService.sendNotification(
-              tokens,
-              title,
-              body,
-              data
-            );
+      //       await NotificationService.sendNotification(
+      //         tokens,
+      //         title,
+      //         body,
+      //         data
+      //       );
 
-            await NotificationService.saveNotification(
-              ticket.buyerId._id,
-              "payment_success",
-              title,
-              body,
-              data
-            );
-          }
-        } catch (emailError) {
-          console.error("Error sending payment success email:", emailError);
-          console.error(emailError.stack);
-        }
-      }
+      //       await NotificationService.saveNotification(
+      //         ticket.buyerId._id,
+      //         "payment_success",
+      //         title,
+      //         body,
+      //         data
+      //       );
+      //     }
+      //   } catch (emailError) {
+      //     console.error("Error sending payment success email:", emailError);
+      //     console.error(emailError.stack);
+      //   }
+      // }
 
       console.log("=== END PAYMENT CALLBACK ===");
       return res.status(200).json({
@@ -127,14 +127,14 @@ class PaymentController {
         const newPaymentStatus = result.resultCode === 0 ? "paid" : "failed";
 
         // Chỉ gửi email nếu trạng thái thay đổi từ pending sang paid
-        if (ticket.paymentStatus !== "paid" && newPaymentStatus === "paid") {
-          try {
-            await EmailService.sendPaymentSuccessEmail(ticket);
-            console.log("Payment success email sent");
-          } catch (emailError) {
-            console.error("Error sending payment success email:", emailError);
-          }
-        }
+        // if (ticket.paymentStatus !== "paid" && newPaymentStatus === "paid") {
+        //   try {
+        //     await EmailService.sendPaymentSuccessEmail(ticket);
+        //     console.log("Payment success email sent");
+        //   } catch (emailError) {
+        //     console.error("Error sending payment success email:", emailError);
+        //   }
+        // }
 
         ticket.paymentStatus = newPaymentStatus;
         await ticket.save();
