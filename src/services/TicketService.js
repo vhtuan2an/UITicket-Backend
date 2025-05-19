@@ -104,9 +104,6 @@ class TicketService {
       if (!ticket) {
         throw new Error("Ticket not found");
       }
-      if (!ticket) {
-        throw new Error("Ticket not found");
-      }
 
       const event = await EventModel.findById(ticket.eventId);
       if (!event) {
@@ -116,7 +113,7 @@ class TicketService {
         throw new Error("Ticket is not in a state to be checked in");
       }
 
-      if (event.creatorId.toString() !== userId || !event.collaborators.includes(userId)) {
+      if (event.createdBy.toString() !== userId && !event.collaborators.includes(userId)) {
         throw new Error("You are not authorized to check in this ticket");
       }
 
