@@ -41,6 +41,7 @@ class TicketService {
       await event.save();
 
       user.ticketsBought.push(ticket._id);
+      await user.save();
 
       return ticket;
     } catch (error) {
