@@ -28,7 +28,7 @@ class TicketService {
 
       const ticket = await TicketModel.create({
         eventId,
-        buyerId ,
+        buyerId,
         bookingCode,
         qrCode,
         status: "booked",
@@ -40,10 +40,9 @@ class TicketService {
       event.ticketsSold += 1;
       await event.save();
 
-    user.ticketsBought.push(ticket._id);
+      user.ticketsBought.push(ticket._id);
 
-    return ticket;
-
+      return ticket;
     } catch (error) {
       throw new Error(error.message);
     }
@@ -58,8 +57,39 @@ class TicketService {
         throw new Error("Ticket not found");
       }
       return ticket;
+    } catch (error) {
+      throw new Error(error.message);
     }
-    catch (error) {
+  }
+
+  async cancelTicket(ticketId, userId, cancelReason) {
+    try {
+      const ticket = await TicketModel.findById(ticketId);
+      if (!ticket) {
+        throw new Error("Ticket not found");
+      }
+
+      if (ticket.buyerId.toString() !== userId) {
+        throw new Error("You are not authorized to cancel this ticket");
+      }
+
+      if (ticket.status === "cancelled") {
+        throw new Error("Ticket is already cancelled");
+      }
+
+      ticket.status = "cancelled";
+      ticket.cancelReason = cancelReason;
+      await ticket.save();
+
+      // Update the event's tickets sold count
+      const event = await EventModel.findById(ticket.eventId);
+      if (event) {
+        event.ticketsSold -= 1;
+        await event.save();
+      }
+
+      return ticket;
+    } catch (error) {
       throw new Error(error.message);
     }
   }

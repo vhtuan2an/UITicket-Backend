@@ -9,7 +9,11 @@ router.post(
     TicketController.bookTicket
 );
 
-
+router.delete(
+    '/:ticketId/cancel',
+    authMiddleware(['ticket_buyer']),
+    TicketController.cancelTicket
+);
 
 
 

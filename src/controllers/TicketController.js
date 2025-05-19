@@ -86,6 +86,28 @@ class TicketController {
       });
     }
   }  
+
+  async cancelTicket(req, res) {
+    try {
+      const {ticketId} = req.params;
+      console.log("Ticket ID:", ticketId);
+      const userId = req.id;
+      const { cancelReason } = req.body;
+
+      const ticket = await TicketService.cancelTicket(ticketId, userId, cancelReason);
+      res.status(200).json({
+        status: "success",
+        data: ticket,
+      });
+    } catch (error) {
+      console.error("Error cancelling ticket:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Internal server error",
+        error: error.toString(),
+      });
+    }
+  }
 }
 
 module.exports = new TicketController();
