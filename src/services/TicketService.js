@@ -94,6 +94,41 @@ class TicketService {
       throw new Error(error.message);
     }
   }
+
+  async checkInTicket(bookingCode, userId) {
+    try {
+      const ticket = await TicketModel.findOne({ bookingCode })
+        .populate("eventId")
+        .populate("buyerId");
+
+      if (!ticket) {
+        throw new Error("Ticket not found");
+      }
+      if (!ticket) {
+        throw new Error("Ticket not found");
+      }
+
+      const event = await EventModel.findById(ticket.eventId);
+      if (!event) {
+        throw new Error("Event not found");
+      }
+      if (ticket.status !== "booked") {
+        throw new Error("Ticket is not in a state to be checked in");
+      }
+
+      if (event.creatorId.toString() !== userId || !event.collaborators.includes(userId)) {
+        throw new Error("You are not authorized to check in this ticket");
+      }
+
+      ticket.status = "checked-in";
+      ticket.checkedInBy = userId;
+      await ticket.save();
+      return ticket;
+    }
+    catch (error) {
+      throw new Error(error.message);
+    }
+  }
 }
 
 module.exports = new TicketService();

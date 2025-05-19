@@ -108,6 +108,26 @@ class TicketController {
       });
     }
   }
+
+  async checkInTicket(req, res) {
+    try {
+      const { bookingCode } = req.body;
+      const userId = req.id;
+
+      const ticket = await TicketService.checkInTicket(bookingCode, userId);
+      res.status(200).json({
+        status: "success",
+        data: ticket,
+      });
+    } catch (error) {
+      console.error("Error checking in ticket:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Internal server error",
+        error: error.toString(),
+      });
+    }
+  }
 }
 
 module.exports = new TicketController();

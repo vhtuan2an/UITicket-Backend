@@ -15,6 +15,12 @@ router.delete(
     TicketController.cancelTicket
 );
 
+router.post(
+    '/check-in',
+    authMiddleware(['event_creator']),
+    TicketController.checkInTicket
+);
+
 
 
 router.get(
