@@ -47,21 +47,25 @@ class TicketController {
         paymentData: paymentResponse,
       });
 
-      res.status(201).json({
-        _id: ticket._id,
-        eventId: ticket.eventId,
-        buyerId: ticket.buyerId,
-        bookingCode: ticket.bookingCode,
-        //qrCode: ticket.qrCode,
-        status: ticket.status,
-        paymentStatus: ticket.paymentStatus,
-        paymentData: paymentResponse,
-        createdAt: ticket.createdAt,
-        updatedAt: ticket.updatedAt,
+      return res.status(201).json({
+        status: "success",
+        message: "Ticket booked successfully",
+        data: {
+          _id: ticket._id,
+          eventId: ticket.eventId,
+          buyerId: ticket.buyerId,
+          bookingCode: ticket.bookingCode,
+          //qrCode: ticket.qrCode,
+          status: ticket.status,
+          paymentStatus: ticket.paymentStatus,
+          paymentData: paymentResponse,
+          createdAt: ticket.createdAt,
+          updatedAt: ticket.updatedAt,
+        },
       });
     } catch (error) {
       console.error("Error booking ticket:", error);
-      res.status(500).json({
+      return res.status(500).json({
         status: "error",
         message: "Internal server error",
         error: error.toString(),
@@ -85,16 +89,20 @@ class TicketController {
         error: error.toString(),
       });
     }
-  }  
+  }
 
   async cancelTicket(req, res) {
     try {
-      const {ticketId} = req.params;
+      const { ticketId } = req.params;
       console.log("Ticket ID:", ticketId);
       const userId = req.id;
       const { cancelReason } = req.body;
 
-      const ticket = await TicketService.cancelTicket(ticketId, userId, cancelReason);
+      const ticket = await TicketService.cancelTicket(
+        ticketId,
+        userId,
+        cancelReason
+      );
       res.status(200).json({
         status: "success",
         data: ticket,
