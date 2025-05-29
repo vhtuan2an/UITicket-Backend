@@ -10,10 +10,12 @@ class MomoService {
       .digest("hex");
   }
 
-  static async createPayment(amount, orderInfo = "Payment for ticket", redirectUrl = momoConfig.REDIRECT_URL) {
+  static async createPayment(amount, orderInfo = "Payment for ticket", redirectUrl = momoConfig.REDIRECT_URL, returnUrl = null) {
     const orderId = momoConfig.PARTNER_CODE + new Date().getTime();
     const requestId = orderId;
-    const responseTime = 1734024385709;
+    
+    // Sử dụng returnUrl nếu được cung cấp, nếu không thì dùng redirectUrl
+    const finalReturnUrl = returnUrl || redirectUrl;
 
     const rawSignature =
       "accessKey=" + momoConfig.ACCESS_KEY +
@@ -23,7 +25,7 @@ class MomoService {
       "&orderId=" + orderId +
       "&orderInfo=" + orderInfo +
       "&partnerCode=" + momoConfig.PARTNER_CODE +
-      "&redirectUrl=" + redirectUrl +
+      "&redirectUrl=" + finalReturnUrl +
       "&requestId=" + requestId +
       "&requestType=captureWallet";
 
@@ -37,7 +39,7 @@ class MomoService {
       amount: amount,
       orderId: orderId,
       orderInfo: orderInfo,
-      redirectUrl: redirectUrl,
+      redirectUrl: finalReturnUrl, // Sử dụng finalReturnUrl thay vì redirectUrl
       ipnUrl: momoConfig.IPN_URL,
       lang: "vi",
       requestType: "captureWallet",

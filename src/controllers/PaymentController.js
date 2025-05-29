@@ -17,89 +17,107 @@ class PaymentController {
     }
   }
 
+  // Xử lý IPN callback từ MoMo (tự động)
   static async handleCallback(req, res) {
     try {
-      console.log("=== START PAYMENT CALLBACK ===");
-      console.log("Headers:", req.headers);
+      console.log("=== MOMO IPN CALLBACK ===");
       console.log("Body:", req.body);
+
       const { orderId, resultCode, message } = req.body;
 
-      console.log("Looking for ticket with orderId:", orderId);
       const ticket = await Ticket.findOne({
         "paymentData.orderId": orderId,
-      }).populate({
-        path: "buyerId",
-        select: "fcmTokens _id",
-      });
-      console.log("Found ticket:", ticket);
+      }).populate("buyerId eventId");
 
       if (!ticket) {
-        console.log("No ticket found for orderId:", orderId);
-        return res.status(404).json({
-          success: false,
-          message: "Không tìm thấy vé với orderId này",
+        return res.status(200).json({ // Return 200 để MoMo không retry
+          message: "Ticket not found",
         });
       }
 
-      // Cập nhật trạng thái thanh toán
       const oldStatus = ticket.paymentStatus;
       ticket.paymentStatus = resultCode === 0 ? "paid" : "failed";
       await ticket.save();
+
       console.log(
-        `Updated payment status from ${oldStatus} to ${ticket.paymentStatus}`
+        `IPN: Updated payment status from ${oldStatus} to ${ticket.paymentStatus}`
       );
 
-      // Gửi email nếu thanh toán thành công
-      // if (resultCode === 0) {
-      //   try {
-      //     console.log("Attempting to send success email...");
-      //     await EmailService.sendPaymentSuccessEmail(ticket);
-      //     console.log("Payment success email sent");
+      // Gửi notification nếu cần
+      if (resultCode === 0) {
+        // TODO: Send push notification to user
+      }
 
-      //     // Gửi thông báo qua FCM
-      //     if (ticket.buyerId?.fcmTokens?.length) {
-      //       const tokens = ticket.buyerId.fcmTokens.filter(Boolean);
-      //       const title = "Payment Successful";
-      //       const body = `Your ticket for order ${orderId} has been successfully paid. 🎉`;
-      //       const data = {
-      //         type: "payment_success",
-      //         ticketId: ticket._id.toString(),
-      //         orderId: orderId.toString(),
-      //       };
+      return res.status(200).json({
+        message: "Callback processed successfully",
+      });
+    } catch (error) {
+      console.error("IPN Callback error:", error);
+      return res.status(200).json({ // Return 200 để MoMo không retry
+        message: "Error processed",
+      });
+    }
+  }
 
-      //       await NotificationService.sendNotification(
-      //         tokens,
-      //         title,
-      //         body,
-      //         data
-      //       );
+  // Xử lý mobile callback từ frontend
+  static async handleMobileCallback(req, res) {
+    try {
+      console.log("=== MOBILE PAYMENT CALLBACK ===");
+      console.log("Body:", req.body);
 
-      //       await NotificationService.saveNotification(
-      //         ticket.buyerId._id,
-      //         "payment_success",
-      //         title,
-      //         body,
-      //         data
-      //       );
-      //     }
-      //   } catch (emailError) {
-      //     console.error("Error sending payment success email:", emailError);
-      //     console.error(emailError.stack);
-      //   }
-      // }
+      const { orderId, resultCode, message, requestId, transId } = req.body;
 
-      console.log("=== END PAYMENT CALLBACK ===");
+      if (!orderId) {
+        return res.status(400).json({
+          success: false,
+          message: "orderId is required",
+        });
+      }
+
+      const ticket = await Ticket.findOne({
+        "paymentData.orderId": orderId,
+      }).populate("buyerId eventId");
+
+      if (!ticket) {
+        return res.status(404).json({
+          success: false,
+          message: "Ticket not found",
+        });
+      }
+
+      // Cập nhật payment status nếu chưa được cập nhật
+      const shouldUpdate = ticket.paymentStatus === "pending";
+
+      if (shouldUpdate) {
+        const oldStatus = ticket.paymentStatus;
+        ticket.paymentStatus = resultCode === 0 ? "paid" : "failed";
+
+        // Cập nhật thêm thông tin transaction
+        ticket.paymentData = {
+          ...ticket.paymentData,
+          resultCode,
+          message,
+          transId,
+          updatedAt: new Date(),
+        };
+
+        await ticket.save();
+        console.log(
+          `Mobile: Updated payment status from ${oldStatus} to ${ticket.paymentStatus}`
+        );
+      }
+
       return res.status(200).json({
         success: true,
-        message: `Cập nhật trạng thái thanh toán thành ${ticket.paymentStatus}`,
+        message: "Payment callback processed",
         data: {
           ticketId: ticket._id,
           paymentStatus: ticket.paymentStatus,
-          momoMessage: message,
+          resultCode,
         },
       });
     } catch (error) {
-      console.error("Payment callback error:", error);
+      console.error("Mobile callback error:", error);
       return res.status(500).json({
         success: false,
         message: error.message,

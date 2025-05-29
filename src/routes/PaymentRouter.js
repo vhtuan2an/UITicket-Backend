@@ -4,6 +4,7 @@ const PaymentController = require("../controllers/PaymentController");
 
 router.post("/create", PaymentController.createPayment);
 router.post("/callback", PaymentController.handleCallback);
+router.post('/mobile-callback', PaymentController.handleMobileCallback);
 router.post("/status", PaymentController.checkTransactionStatus);
 
 module.exports = router;

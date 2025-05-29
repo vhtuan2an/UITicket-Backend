@@ -36,11 +36,16 @@ class TicketController {
       const ticket = await TicketService.bookTicket(eventId, userId);
 
       const orderInfo = `Thanh toán vé sự kiện "${event.name}"`;
-      const redirectUrl = "";
+      
+      // Thêm returnUrl cho mobile app
+      const returnUrl = "uiticket://payment"; // Deep link cho mobile app
+      const redirectUrl = ""; // Giữ trống hoặc sử dụng web URL
+      
       const paymentResponse = await MomoService.createPayment(
         event.price,
         orderInfo,
-        redirectUrl
+        redirectUrl,
+        returnUrl // Thêm parameter returnUrl
       );
 
       await TicketModel.findByIdAndUpdate(ticket._id, {
