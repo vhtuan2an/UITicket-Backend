@@ -9,19 +9,23 @@ router.post(
     TicketController.bookTicket
 );
 
-router.delete(
-    '/:ticketId/cancel',
-    authMiddleware(['ticket_buyer']),
-    TicketController.cancelTicket
-);
-
 router.post(
     '/check-in',
     authMiddleware(['event_creator']),
     TicketController.checkInTicket
 );
 
+router.get(
+    '/user',
+    authMiddleware(['ticket_buyer', 'admin']), 
+    TicketController.getUserTickets
+);
 
+router.delete(
+    '/:ticketId/cancel',
+    authMiddleware(['ticket_buyer']),
+    TicketController.cancelTicket
+);
 
 router.get(
     '/:ticketId',

@@ -60,7 +60,7 @@ class TicketController {
           eventId: ticket.eventId,
           buyerId: ticket.buyerId,
           bookingCode: ticket.bookingCode,
-          //qrCode: ticket.qrCode,
+          qrCode: ticket.qrCode,
           status: ticket.status,
           paymentStatus: ticket.paymentStatus,
           paymentData: paymentResponse,
@@ -138,6 +138,64 @@ class TicketController {
         status: "error",
         message: "Internal server error",
         error: error.toString(),
+      });
+    }
+  }
+
+  async getUserTickets(req, res) {
+    try {
+      const userId = req.id; // From auth middleware
+
+      // Find user and populate ticketsBought with event details
+      const user = await User.findById(userId).populate({
+        path: "ticketsBought",
+        populate: {
+          path: "eventId",
+          select: "name date location price images description maxAttendees ticketsSold"
+        },
+        options: { sort: { createdAt: -1 } } // Sort by newest first
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "User not found",
+        });
+      }
+
+      // Format tickets data for frontend
+      const formattedTickets = user.ticketsBought.map((ticket) => ({
+        _id: ticket._id,
+        eventId: ticket.eventId._id,
+        buyerId: ticket.buyerId,
+        bookingCode: ticket.bookingCode,
+        status: ticket.status,
+        paymentStatus: ticket.paymentStatus,
+        paymentData: ticket.paymentData,
+        createdAt: ticket.createdAt,
+        updatedAt: ticket.updatedAt,
+        // Event details for display
+        event: {
+          _id: ticket.eventId._id,
+          name: ticket.eventId.name,
+          date: ticket.eventId.date,
+          location: ticket.eventId.location,
+          price: ticket.eventId.price,
+          images: ticket.eventId.images,
+          description: ticket.eventId.description,
+          maxAttendees: ticket.eventId.maxAttendees,
+          ticketsSold: ticket.eventId.ticketsSold
+        }
+      }));
+
+      return res.status(200).json({
+        status: "success",
+        data: formattedTickets,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        message: error.message,
       });
     }
   }
